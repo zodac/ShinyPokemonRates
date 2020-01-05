@@ -1,0 +1,45 @@
+version: '2.1'
+
+services:
+
+  selenium-hub:
+    image: selenium/hub:3.14.0-gallium
+    container_name: selenium-hub
+    hostname: selenium-hub
+    expose:
+      - 4444
+    ports:
+      - 4444:4444
+
+  selenium-chrome:
+    image: selenium/node-chrome:3.14.0-gallium
+    hostname: selenium-chrome
+    depends_on: 
+      - selenium-hub
+    environment:
+      HUB_HOST: selenium-hub
+
+  postgres:
+    build: ./postgres
+    container_name: postgres
+    hostname: postgres
+    environment:
+      # First 4 variables used to configure DB
+      - POSTGRES_USER=shiny_user
+      - POSTGRES_PASSWORD=shroot
+      - POSTGRES_DB=shiny_db
+      - POSTGRES_PORT=5432
+      # Next 3 variables needed to avoid "FATAL role 'root' does not exist" error
+      - PGDATABASE=shiny_db
+      - PGUSER=shiny_user
+      - PGPASSWORD=shroot
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    restart: always
+    healthcheck:
+      test: pg_isready --host localhost || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 30
