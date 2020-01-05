@@ -13,15 +13,16 @@ import (
 )
 
 const (
-	url 				= "https://shinyrates.com"
+	url                             = "https://shiyrates.com"
 	cronIntervalInHours = 6
+	dockerHost = "localhost"
 )
 
 func CreateCronJob() {
 	cronJob := gocron.NewScheduler()
 	cronJob.Every(cronIntervalInHours).Hours().Do(checkPokemon)
 
-	fmt.Printf("Checking Pokémon every %v hours...\n", cronIntervalInHours)
+	fmt.Printf("Checking Pokemon every %v hours...\n", cronIntervalInHours)
 	checkPokemon() // Check once before the CRON job starts
 	<-cronJob.Start()
 }
@@ -29,14 +30,14 @@ func CreateCronJob() {
 func checkPokemon() {
 	allPokemonById, err := getAllPokemonById()
 	if err != nil {
-		fmt.Printf("Failed to retrieve all Pokémon: %s", err)
+		fmt.Printf("Failed to retrieve all Pokemon: %s", err)
 		return
-	}	
+	}
 
 	currentTime := time.Now()
-	fmt.Printf("\nFound (%v) filtered Pokémon at %s\n", len(allPokemonById), currentTime.Format("2006-01-02 15:04"))
+	fmt.Printf("\nFound (%v) filtered Pokemon at %s\n", len(allPokemonById), currentTime.Format("2006-01-02 15:04"))
 
-	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@localhost/shiny_db?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@"+dockerHost+"/shiny_db?sslmode=disable")
 	if err != nil {
 		fmt.Printf("Error opening DB connection: %s", err)
 		return
@@ -48,7 +49,7 @@ func checkPokemon() {
 			fmt.Printf("Error %s: %s\n", pokemon.Name, err)
 		}
 	}
-	fmt.Println("Dumped all Pokémon to DB")
+	fmt.Println("Dumped all Pokemon to DB")
 }
 
 func dumpPokemon(db *sql.DB, pokemon Pokemon) error {
@@ -79,7 +80,7 @@ func getShinyTable() (string, error) {
 		"browserName": "chrome",
 	})
 
-	webDriver, err := selenium.NewRemote(capabilities, "http://localhost:4444/wd/hub")
+	webDriver, err := selenium.NewRemote(capabilities, "http://"+dockerHost+":4444/wd/hub")
 	if err != nil {
 		fmt.Printf("Failed to open session: %s", err)
 		return "", err
