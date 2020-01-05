@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	url                             = "https://shiyrates.com"
+	url                             = "https://shinyrates.com"
 	cronIntervalInHours = 6
 	dockerHost = "localhost"
 )
