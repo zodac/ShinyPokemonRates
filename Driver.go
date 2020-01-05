@@ -4,10 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
+	"html/template"
 
-	// TODO: Use modules instead of go get
 	humanize "github.com/dustin/go-humanize"
 )
 
@@ -70,12 +69,12 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 
 	validPokemonById := make(map[int]PokemonDb)
 	for dexNumber, pokemon := range pokemonFromDb {
-		if !contains(InvalidPokemon, pokemon.Name) {
+		if !Contains(InvalidPokemon, pokemon.Name) {
 			validPokemonById[dexNumber] = pokemon
 		}
 	}
 
-	sortedKeys := getSortedKeys(validPokemonById)
+	sortedKeys := GetSortedKeys(validPokemonById)
 	shinyTableHtml := ""
 
 	for _, sortedKey := range sortedKeys {
@@ -101,98 +100,7 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 		humanize.Comma(int64(sortedPokemon.Seen)))
 	}
 
-	// TODO: Move to a template
-	fmt.Fprintf(writer, fmt.Sprintf(`
-	<!DOCTYPE html>
-	<html lang="en">
-		<head>
-			<meta charset="utf-8">
-			<meta http-equiv="x-ua-compatible" content="ie=edge">
-			<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-			<title>Live shiny rates for Pokémon Go</title>
-
-			<style>
-				.icon {
-					width: 60px;
-					height: 60px;
-				}
-					
-				#header {
-					font-weight: bold;
-					font-size: 25px;
-					text-align: center;
-					margin: 10px 0 0 0;
-				}
-				
-				#data_period {
-					font-size: 15px;
-					text-align: center;
-					margin: 10px;
-				}
-				
-				.table > thead > tr > th {
-					vertical-align: middle;
-				}
-			
-				.table > tbody > tr > td {
-					vertical-align: middle;
-				}
-				
-				#footer {
-					font-size: 13px;
-					text-align: center;
-					margin: 10px;
-				}
-			</style>
-		</head>
-		<body>
-			<div id="header">
-				Live Shiny Rates for Pokémon Go
-			</div>
-			<div id="data_period">
-				<!-- Data from the last 24 hours. -->
-			</div>
-			<div id="shiny_table">
-				<table class="table table-striped table-hover table-sm">
-				<thead class="thead-dark">
-					<tr>
-					<th scope="col"/>
-					<th scope="col">ID</th>
-					<th scope="col">Name</th>
-					<th scope="col">Shiny Rate</th>
-					<th scope="col">Sample Size</th>
-					</tr>
-				</thead>
-				<tbody id="table_body">
-						%s
-				</tbody>
-				</table>
-			</div>
-			<div id="footer">
-				Data is kindly provided by <a href="https://shinyrates.com">shinyrates.com</a>, updated every 6 hours.
-			</div>
-		</body>
-	<html>
-	`, shinyTableHtml))
-}
-
-func getSortedKeys(pokemonById map[int]PokemonDb) []int {
-	keys := make([]int, 0, len(pokemonById))
-
-	for key := range pokemonById {
-		keys = append(keys, key)
-	}
-
-	sort.Ints(keys)
-	return keys
-}
-
-func contains(array []string, input string) bool {
-    for _, element := range array {
-        if input == element {
-            return true
-        }
-    }
-    return false
+	// TODO: Add dividers for different gens
+	template, _ := template.ParseFiles("html/index.html")
+	template.Execute(writer, shinyTableHtml)
 }
