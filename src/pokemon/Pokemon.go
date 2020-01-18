@@ -14,7 +14,6 @@ type Pokemon struct {
 	TotalFound string
 }
 
-
 type PokemonDb struct {
 	Name  string
 	Id    int
@@ -136,6 +135,7 @@ var InvalidPokemon = []string{
 	"Trapinch",
 	"Swablu",
 	"Zangoose",
+	"Seviper",
 	"Solrock",
 	"Barboach",
 	"Lileep",

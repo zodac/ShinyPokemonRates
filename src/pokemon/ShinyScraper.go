@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
 	"database/sql"
+
 	_ "github.com/lib/pq"
 
 	"github.com/jasonlvhit/gocron"
@@ -13,21 +15,28 @@ import (
 )
 
 const (
-	url                             = "https://shinyrates.com"
+	url                 = "https://shinyrates.com"
 	cronIntervalInHours = 6
-	dockerHost = "localhost"
+	dockerHost          = "localhost"
+	seleniumHost        = "selenium-hub"
 )
 
 func CreateCronJob() {
 	cronJob := gocron.NewScheduler()
-	cronJob.Every(cronIntervalInHours).Hours().Do(checkPokemon)
+	cronJob.Every(cronIntervalInHours).Hours().Do(CheckPokemon)
 
 	fmt.Printf("Checking Pokemon every %v hours...\n", cronIntervalInHours)
-	checkPokemon() // Check once before the CRON job starts
+	CheckPokemon() // Check once before the CRON job starts
 	<-cronJob.Start()
 }
 
-func checkPokemon() {
+func CheckPokemonManual(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("Checking for Pokemon")
+	CheckPokemon()
+	fmt.Fprintf(writer, "Pokemon loaded!")
+}
+
+func CheckPokemon() {
 	allPokemonById, err := getAllPokemonById()
 	if err != nil {
 		fmt.Printf("Failed to retrieve all Pokemon: %s", err)
@@ -37,7 +46,7 @@ func checkPokemon() {
 	currentTime := time.Now()
 	fmt.Printf("\nFound (%v) filtered Pokemon at %s\n", len(allPokemonById), currentTime.Format("2006-01-02 15:04"))
 
-	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@"+dockerHost+"/shiny_db?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@"+"postgres"+"/shiny_db?sslmode=disable")
 	if err != nil {
 		fmt.Printf("Error opening DB connection: %s", err)
 		return
@@ -80,7 +89,7 @@ func getShinyTable() (string, error) {
 		"browserName": "chrome",
 	})
 
-	webDriver, err := selenium.NewRemote(capabilities, "http://"+dockerHost+":4444/wd/hub")
+	webDriver, err := selenium.NewRemote(capabilities, "http://"+seleniumHost+":4444/wd/hub")
 	if err != nil {
 		fmt.Printf("Failed to open session: %s", err)
 		return "", err

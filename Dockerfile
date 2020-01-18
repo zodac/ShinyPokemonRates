@@ -6,7 +6,7 @@ COPY ./go.mod ./go.sum ./
 RUN go mod download
 COPY . .
 
-RUN go build -o main .
+RUN go build -o main ./src/pokemon
 
 EXPOSE 5000
 

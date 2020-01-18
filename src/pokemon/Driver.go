@@ -3,27 +3,31 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
-	"html/template"
+	"text/template"
 
 	humanize "github.com/dustin/go-humanize"
 )
 
 const (
-	port = "5000"
+	port             = "5000"
+	templateFileName = "index.html"
+	templateFilePath = "src/pokemon/html/" + templateFileName
 )
 
 func main() {
 	go CreateCronJob()
 	fmt.Printf("Starting HTTP server on port %s\n", port)
 	http.HandleFunc("/shiny", showRates)
-	http.ListenAndServe(":"+port, nil)
+	http.HandleFunc("/manual", CheckPokemonManual)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 // TODO: Split this into more classes
 func showRates(writer http.ResponseWriter, request *http.Request) {
-	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@localhost/shiny_db?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@postgres/shiny_db?sslmode=disable")
 	if err != nil {
 		fmt.Printf("Error opening DB connection: %s", err)
 		return
@@ -79,7 +83,7 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 
 	for _, sortedKey := range sortedKeys {
 		sortedPokemon := validPokemonById[sortedKey]
-		rate := sortedPokemon.Seen/sortedPokemon.Found
+		rate := sortedPokemon.Seen / sortedPokemon.Found
 
 		// TODO: Use <img class="icon" src="./icons/%[1]s.png"> when possible
 		shinyTableHtml += fmt.Sprintf(`
@@ -93,14 +97,24 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 							<td>%[4]s in %[5]s</td>
 						</tr>
 		`,
-		strconv.Itoa(sortedPokemon.Id),
-		sortedPokemon.Name,
-		humanize.Comma(int64(rate)),
-		humanize.Comma(int64(sortedPokemon.Found)),
-		humanize.Comma(int64(sortedPokemon.Seen)))
+			strconv.Itoa(sortedPokemon.Id),
+			sortedPokemon.Name,
+			humanize.Comma(int64(rate)),
+			humanize.Comma(int64(sortedPokemon.Found)),
+			humanize.Comma(int64(sortedPokemon.Seen)))
 	}
 
 	// TODO: Add dividers for different gens
-	template, _ := template.ParseFiles("html/index.html")
-	template.Execute(writer, shinyTableHtml)
+	// TODO: Use a range in the template?
+
+	pageData := PageData{
+		TableBody: shinyTableHtml,
+	}
+
+	templates := template.Must(template.ParseFiles(templateFilePath))
+	templates.ExecuteTemplate(writer, templateFileName, pageData)
+}
+
+type PageData struct {
+	TableBody string
 }

@@ -2,16 +2,16 @@ version: '2.1'
 
 services:
 
-  # go:
-  #   build: ../
-  #   container_name: go
-  #   hostname: go
-  #   depends_on: 
-  #     - selenium-hub
-  #   ports:
-  #     - 5000:5000
-  #   expose:
-  #     - 5000
+  go:
+    build: ../
+    container_name: go
+    hostname: go
+    depends_on: 
+      - selenium-hub
+    ports:
+      - 5000:5000
+    expose:
+      - 5000
 
   selenium-hub:
     image: selenium/hub:3.14.0-gallium
