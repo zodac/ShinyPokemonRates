@@ -14,7 +14,7 @@ import (
 const (
 	port             = "5000"
 	templateFileName = "index.html"
-	templateFilePath = "src/pokemon/html/" + templateFileName
+	templateFilePath = "src/html/" + templateFileName
 )
 
 func main() {
