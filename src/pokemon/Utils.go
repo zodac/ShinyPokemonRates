@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"sort"
 )
 
@@ -16,10 +17,18 @@ func GetSortedKeys(pokemonById map[int]PokemonDb) []int {
 }
 
 func Contains(array []string, input string) bool {
-    for _, element := range array {
-        if input == element {
-            return true
-        }
-    }
-    return false
+	for _, element := range array {
+		if input == element {
+			return true
+		}
+	}
+	return false
+}
+
+func GetEnv(envVariableName, fallbackValue string) string {
+	val := os.Getenv(envVariableName)
+	if val != "" {
+		return val
+	}
+	return fallbackValue
 }

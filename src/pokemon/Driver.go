@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,27 +12,34 @@ import (
 
 const (
 	port             = "5000"
+	templateRootDir  = "html/"
 	templateFileName = "index.html"
-	templateFilePath = "src/html/" + templateFileName
+	templateFilePath = templateRootDir + templateFileName
+)
+
+var (
+	intervalInHours = GetEnv("INTERVAL_IN_HOURS", "24")
 )
 
 func main() {
-	go CreateCronJob()
-	fmt.Printf("Starting HTTP server on port %s\n", port)
 	http.HandleFunc("/shiny", showRates)
 	http.HandleFunc("/manual", CheckPokemonManual)
+	http.Handle("/", http.FileServer(http.Dir(templateRootDir)))
+
+	go CreateCronJob()
+	fmt.Printf("Starting HTTP server on port %s\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 // TODO: Split this into more classes
 func showRates(writer http.ResponseWriter, request *http.Request) {
-	db, err := sql.Open("postgres", "postgres://shiny_user:shroot@postgres/shiny_db?sslmode=disable")
+	db, err := OpenPokemonDb()
 	if err != nil {
 		fmt.Printf("Error opening DB connection: %s", err)
 		return
 	}
 
-	rows, err := db.Query("SELECT pokemon, id, seen, found FROM shiny_pokemon")
+	rows, err := GetPokemonFromDb(db)
 	if err != nil {
 		fmt.Printf("Error reading from DB: %s\n", err)
 		return
@@ -63,7 +69,7 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 
 		newPokemon := PokemonDb{
 			Name:  pokemon,
-			Id:    id,
+			ID:    id,
 			Seen:  totalSeen,
 			Found: totalFound,
 		}
@@ -71,25 +77,24 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 		pokemonFromDb[id] = newPokemon
 	}
 
-	validPokemonById := make(map[int]PokemonDb)
+	validPokemonByID := make(map[int]PokemonDb)
 	for dexNumber, pokemon := range pokemonFromDb {
 		if !Contains(InvalidPokemon, pokemon.Name) {
-			validPokemonById[dexNumber] = pokemon
+			validPokemonByID[dexNumber] = pokemon
 		}
 	}
 
-	sortedKeys := GetSortedKeys(validPokemonById)
-	shinyTableHtml := ""
+	sortedKeys := GetSortedKeys(validPokemonByID)
+	shinyTableHTML := ""
 
 	for _, sortedKey := range sortedKeys {
-		sortedPokemon := validPokemonById[sortedKey]
+		sortedPokemon := validPokemonByID[sortedKey]
 		rate := sortedPokemon.Seen / sortedPokemon.Found
 
-		// TODO: Use <img class="icon" src="./icons/%[1]s.png"> when possible
-		shinyTableHtml += fmt.Sprintf(`
+		shinyTableHTML += fmt.Sprintf(`
 						<tr>
 							<th scope="row" id="%[1]s">
-								<img class="icon" src="https://shinyrates.com/images/icons/%[1]s.png">
+								<img class="icon" src="res/sprites/%[1]s.png">
 							</th>
 							<td>%[1]s</td>
 							<td>%[2]s</td>
@@ -97,7 +102,7 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 							<td>%[4]s in %[5]s</td>
 						</tr>
 		`,
-			strconv.Itoa(sortedPokemon.Id),
+			strconv.Itoa(sortedPokemon.ID),
 			sortedPokemon.Name,
 			humanize.Comma(int64(rate)),
 			humanize.Comma(int64(sortedPokemon.Found)),
@@ -108,7 +113,8 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 	// TODO: Use a range in the template?
 
 	pageData := PageData{
-		TableBody: shinyTableHtml,
+		TableBody:       shinyTableHTML,
+		IntervalInHours: intervalInHours,
 	}
 
 	templates := template.Must(template.ParseFiles(templateFilePath))
@@ -116,5 +122,6 @@ func showRates(writer http.ResponseWriter, request *http.Request) {
 }
 
 type PageData struct {
-	TableBody string
+	TableBody       string
+	IntervalInHours string
 }

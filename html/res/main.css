@@ -1,0 +1,57 @@
+.icon {
+    width: 60px;
+    height: 60px;
+}
+
+#data_period {
+    font-size: 15px;
+    text-align: center;
+    margin: 10px;
+}
+
+.table > thead > tr > th {
+    vertical-align: middle;
+}
+
+.table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+#header {
+    font-weight: bold;
+    font-size: 25px;
+    text-align: center;
+    margin: 10px 0 0 0;
+}
+
+#footer {
+    font-size: 13px;
+    text-align: center;
+    margin: 10px;
+}
+
+#manual-load-button {
+    box-shadow:inset 0px 1px 0px 0px #54A3f7;
+    background:linear-gradient(to bottom, #007DC1 5%, #0061A7 100%);
+    background-color:#007DC1;
+    border-radius:3px;
+    border:1px solid #124D77;
+    color:#FFFFFF;
+    cursor:pointer;
+    float: right;
+    font-family:Arial;
+    font-size:13px;
+    padding:6px 8px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #154682;
+}
+
+#manual-load-button:hover {
+    background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+    background-color:#0061a7;
+}
+
+#manual-load-button:active {
+    position:relative;
+    top:1px;
+}

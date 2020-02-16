@@ -16,7 +16,7 @@ type Pokemon struct {
 
 type PokemonDb struct {
 	Name  string
-	Id    int
+	ID    int
 	Seen  int
 	Found int
 }
@@ -53,6 +53,7 @@ func NewPokemon(shinyTableEntry string) Pokemon {
 	return pokemon
 }
 
+// TODO: Move to file
 var InvalidPokemon = []string{
 	// Gen 1
 	"Bulbasaur",
@@ -158,6 +159,7 @@ var InvalidPokemon = []string{
 	// Gen 4
 	"Turtwig",
 	"Chimchar",
+	"Piplup",
 	"Shinx",
 	"Drifloon",
 	"Buneary",

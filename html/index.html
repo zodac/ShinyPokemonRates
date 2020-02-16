@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        
+        <link rel="icon" type="image/png" href="res/favicon.png">
+        <link rel="stylesheet" href="res/main.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <title>Live Shiny Rates for Pokémon Go</title>
+    </head>
+    <body>
+        <header id="header" style="text-align: center">
+            <!-- TODO: Make this an async call -->
+            <a id="manual-load-button" href="./manual" target="_blank">Manual update</a>
+			<div id="title" style="display: inline-block">Live Shiny Rates for Pokémon Go</div>
+		</header>
+		
+        <div id="shiny_table">
+            <table class="table table-striped table-hover table-sm">
+            <thead class="thead-dark">
+                <tr>
+                <th scope="col"></th>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Shiny Rate</th>
+                <th scope="col">Sample Size</th>
+                </tr>
+            </thead>
+            <tbody id="table_body">
+				{{.TableBody}}
+            </tbody>
+            </table>
+        </div>
+
+        <footer id="footer">Data is provided by <a href="https://shinyrates.com">shinyrates.com</a>, updated every {{.IntervalInHours}} hours.</footer>
+    </body>
+<html>
