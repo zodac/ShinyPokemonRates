@@ -13,7 +13,7 @@ import (
 const (
 	port             = "5000"
 	templateRootDir  = "html/"
-	templateFileName = "index.html"
+	templateFileName = "template.html"
 	templateFilePath = templateRootDir + templateFileName
 )
 
@@ -22,9 +22,9 @@ var (
 )
 
 func main() {
-	http.HandleFunc("/shiny", showRates)
+	http.HandleFunc("/", showRates)
 	http.HandleFunc("/manual", CheckPokemonManual)
-	http.Handle("/", http.FileServer(http.Dir(templateRootDir)))
+	http.Handle("/html", http.FileServer(http.Dir(templateRootDir)))
 
 	go CreateCronJob()
 	fmt.Printf("Starting HTTP server on port %s\n", port)
